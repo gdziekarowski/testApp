@@ -16,11 +16,8 @@
             </div>
         @endif
 
-        <form method="GET" action="{{ route('app.panel') }}" style="margin-bottom: 24px;">
-            @if ($clientId)
-                <input type="hidden" name="client" value="{{ $clientId }}">
-            @endif
-            <input type="hidden" name="fetch" value="1">
+        <form method="POST" action="{{ route('app.shops.fetch') }}" style="margin-bottom: 24px;">
+            @csrf
             <button id="btn-fetch-shops" type="submit" style="background-color: #2563eb; color: #ffffff; border: none; padding: 10px 20px; font-size: 15px; font-weight: 600; border-radius: 6px; cursor: pointer;">
                 Pokaż sklepy
             </button>
@@ -48,8 +45,8 @@
                             @foreach ($shops as $shop)
                                 <tr style="border-bottom: 1px solid #e5e7eb;">
                                     <td style="padding: 12px; font-weight: 600;">{{ $shop['id'] ?? '—' }}</td>
-                                    <td style="padding: 12px;">{{ $shop['name'] ?? ($shop['shop_name'] ?? '—') }}</td>
-                                    <td style="padding: 12px; color: #4b5563;">{{ $shop['domain'] ?? ($shop['shop_domain'] ?? '—') }}</td>
+                                    <td style="padding: 12px;">{{ $shop['name'] ?? '—' }}</td>
+                                    <td style="padding: 12px; color: #4b5563;">{{ $shop['domain'] ?? '—' }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
