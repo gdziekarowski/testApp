@@ -12,7 +12,7 @@ class ExampleTest extends TestCase
      */
     public function test_the_application_returns_a_successful_response(): void
     {
-        $signedUrl = URL::signedRoute('app.panel');
+        $signedUrl = URL::signedRoute('app.panel', ['client' => 555001]);
         $response = $this->get($signedUrl);
 
         $response->assertStatus(200);

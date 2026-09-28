@@ -126,7 +126,7 @@ return [
     */
 
     'launch' => [
-        'route' => env('IDOSELL_LAUNCH_ROUTE'),
+        'route' => env('IDOSELL_LAUNCH_ROUTE', 'app.panel'),
         'url' => env('IDOSELL_LAUNCH_URL'),
         'signed' => (bool) env('IDOSELL_LAUNCH_SIGNED', true),
         'ttl' => (int) env('IDOSELL_LAUNCH_TTL', 30),

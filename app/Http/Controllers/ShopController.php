@@ -6,150 +6,158 @@ namespace App\Http\Controllers;
 
 use Idosell\LaravelAppSdk\Exceptions\ApiException;
 use Idosell\LaravelAppSdk\Facades\Idosell;
-use Idosell\LaravelAppSdk\Services\AdminApiClient;
+use Idosell\LaravelAppSdk\Models\IdosellLicense;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\URL;
+use Throwable;
 
+/**
+ * Panel aplikacji otwierany z panelu IdoSell (webhook `launch` zwraca podpisany URL).
+ *
+ * Aplikacja działa w iframe panelu IdoSell (cross-site), gdzie przeglądarki nie odsyłają
+ * ciasteczka sesji (SameSite=Lax, Safari ITP) — dlatego kontekstu sprzedawcy NIE trzymamy
+ * w sesji. Tożsamość (`client`) pochodzi wyłącznie z podpisanego URL: wejście z launch
+ * weryfikuje middleware `signed`, a formularz „Pokaż sklepy” wysyła POST na osobny,
+ * czasowo podpisany URL (ten sam mechanizm co w onet: podpisany kontekst zamiast cookie).
+ */
 class ShopController extends Controller
 {
+    private const ACCESS_DENIED = 'Brak dostępu. Uruchom aplikację z panelu IdoSell.';
+
+    /**
+     * Wejście z panelu IdoSell — trasa z middleware `signed`, więc `client` jest zaufany.
+     */
     public function index(Request $request): View
     {
-        $clientId = $request->query('client') ? (int) $request->query('client') : null;
+        $clientId = $this->signedClientId($request);
 
-        if ($clientId !== null) {
-            session()->regenerate();
-            session()->put('idosell_client_id', $clientId);
+        if ($clientId === null) {
+            abort(403, self::ACCESS_DENIED);
         }
 
         return view('welcome', [
-            'clientId' => $clientId ?? session()->get('idosell_client_id'),
+            'clientId' => $clientId,
+            'fetchUrl' => $this->fetchUrl($clientId),
             'shops' => null,
             'error' => null,
         ]);
     }
 
+    /**
+     * „Pokaż sklepy” — `client` bierzemy tylko z podpisanego query stringu, nigdy z body.
+     */
     public function fetchShops(Request $request): View
     {
-        $clientId = session()->get('idosell_client_id');
-        $shops = null;
-        $error = null;
+        $clientId = $request->hasValidSignature() ? $this->signedClientId($request) : null;
 
-        if ($clientId !== null) {
-            $license = Idosell::license((int) $clientId);
-            $appId = Config::get('idosell.apps.application_id');
-
-            if ($license === null || ! $license->active || ($appId !== null && (int) $license->application_id !== (int) $appId)) {
-                $error = 'Brak aktywnej licencji w systemie.';
-            } else {
-                $result = $this->executeApiCall(fn () => $license->adminApi(timeout: 5, retries: 0));
-                $shops = $result['shops'];
-                $error = $result['error'];
-            }
-        } else {
-            if (! app()->isLocal()) {
-                $error = 'Brak dostępu. Uruchom aplikację z panelu IdoSell.';
-            } else {
-                $demoDomain = (string) Config::get('services.idosell_demo.domain');
-                $demoApiKey = (string) Config::get('services.idosell_demo.api_key');
-
-                if (empty($demoDomain) || empty($demoApiKey)) {
-                    $error = 'Brak aktywnej licencji w systemie oraz brak skonfigurowanych danych demo w .env (IDOSELL_DEMO_DOMAIN / IDOSELL_DEMO_API_KEY).';
-                } else {
-                    $apiUrl = str_starts_with($demoDomain, 'http') ? $demoDomain : 'https://' . $demoDomain;
-
-                    $result = $this->executeApiCall(fn () => new AdminApiClient(
-                        apiUrl: $apiUrl,
-                        apiKey: $demoApiKey,
-                        authorizationType: 'key',
-                        timeout: 5,
-                        retries: 0
-                    ));
-                    $shops = $result['shops'];
-                    $error = $result['error'];
-                }
-            }
+        if ($clientId === null) {
+            return $this->render(null, null, self::ACCESS_DENIED);
         }
 
+        $license = Idosell::license($clientId);
+
+        if (! $license instanceof IdosellLicense || ! $license->active) {
+            return $this->render($clientId, null, 'Brak aktywnej licencji w systemie.');
+        }
+
+        $result = $this->fetchShopsFromAdminApi($license);
+
+        return $this->render($clientId, $result['shops'], $result['error']);
+    }
+
+    private function signedClientId(Request $request): ?int
+    {
+        $clientId = (int) $request->query('client', 0);
+
+        return $clientId > 0 ? $clientId : null;
+    }
+
+    private function fetchUrl(int $clientId): string
+    {
+        return URL::temporarySignedRoute(
+            'app.shops.fetch',
+            now()->addMinutes((int) Config::get('idosell.launch.ttl', 30)),
+            ['client' => $clientId],
+        );
+    }
+
+    /**
+     * @param  array<int, array{id: int|string, name: string, domain: string}>|null  $shops
+     */
+    private function render(?int $clientId, ?array $shops, ?string $error): View
+    {
         return view('welcome', [
             'clientId' => $clientId,
+            'fetchUrl' => $clientId !== null ? $this->fetchUrl($clientId) : null,
             'shops' => $shops,
             'error' => $error,
         ]);
     }
 
     /**
-     * @param callable(): AdminApiClient $clientResolver
-     * @return array{shops: array<int, array{id: int|string, name: string, domain?: string}>|null, error: string|null}
+     * @return array{shops: array<int, array{id: int|string, name: string, domain: string}>|null, error: string|null}
      */
-    private function executeApiCall(callable $clientResolver): array
+    private function fetchShopsFromAdminApi(IdosellLicense $license): array
     {
         try {
-            $client = $clientResolver();
+            $client = $license->adminApi(timeout: 5, retries: 0);
             $response = $client->get($client->admin('system/shopsData'));
 
-            $rawShops = $response['shop_contact'] ?? [];
-            $shops = [];
-            foreach ($rawShops as $item) {
-                if (empty($item['shop_id'])) {
-                    continue;
-                }
-
-                $domain = $item['shop_url'] ?? $item['shop_domain'] ?? (
-                    str_starts_with($item['shop_name'] ?? '', 'http')
-                        ? $item['shop_name']
-                        : 'https://' . ($item['shop_name'] ?? '')
-                );
-
-                $shops[] = [
-                    'id' => $item['shop_id'],
-                    'name' => $item['shop_name'] ?? '—',
-                    'domain' => $domain,
-                ];
-            }
-
-            return [
-                'shops' => $shops,
-                'error' => null,
-            ];
+            return ['shops' => $this->mapShops($response['shop_contact'] ?? []), 'error' => null];
         } catch (ApiException $e) {
             report($e);
-            $debug = (bool) Config::get('app.debug');
 
-            if (in_array($e->status, [401, 403], true)) {
-                $msg = 'Błąd autoryzacji: Odrzucono klucz API sklepu (status HTTP ' . $e->status . ').';
-                return [
-                    'shops' => null,
-                    'error' => $debug ? $msg . ': ' . $e->getMessage() : $msg,
-                ];
-            }
+            $message = in_array($e->status, [401, 403], true)
+                ? 'Błąd autoryzacji: Odrzucono klucz API sklepu (status HTTP '.$e->status.').'
+                : 'Błąd IdoSell Admin API'.($e->status ? ' (status HTTP '.$e->status.')' : '');
 
-            $statusStr = $e->status ? ' (status HTTP ' . $e->status . ')' : '';
-            $msg = 'Błąd IdoSell Admin API' . $statusStr;
-
-            return [
-                'shops' => null,
-                'error' => $debug ? $msg . ': ' . $e->getMessage() : $msg,
-            ];
+            return ['shops' => null, 'error' => $this->withDebugDetails($message, $e)];
         } catch (ConnectionException $e) {
             report($e);
-            $debug = (bool) Config::get('app.debug');
-            $msg = 'Brak połączenia z serwerem IdoSell';
 
-            return [
-                'shops' => null,
-                'error' => $debug ? $msg . ': ' . $e->getMessage() : $msg,
-            ];
-        } catch (\Throwable $e) {
+            return ['shops' => null, 'error' => $this->withDebugDetails('Brak połączenia z serwerem IdoSell', $e)];
+        } catch (Throwable $e) {
             report($e);
-            $debug = (bool) Config::get('app.debug');
-            $msg = 'Wystąpił nieoczekiwany błąd';
 
-            return [
-                'shops' => null,
-                'error' => $debug ? $msg . ': ' . $e->getMessage() : $msg,
+            return ['shops' => null, 'error' => $this->withDebugDetails('Wystąpił nieoczekiwany błąd', $e)];
+        }
+    }
+
+    /**
+     * @param  mixed  $rawShops  `shop_contact` z system/shopsData
+     * @return array<int, array{id: int|string, name: string, domain: string}>
+     */
+    private function mapShops(mixed $rawShops): array
+    {
+        if (! is_array($rawShops)) {
+            return [];
+        }
+
+        $shops = [];
+
+        foreach ($rawShops as $item) {
+            if (! is_array($item) || empty($item['shop_id'])) {
+                continue;
+            }
+
+            $name = (string) ($item['shop_name'] ?? '');
+            $domain = $item['shop_url'] ?? $item['shop_domain'] ?? null;
+
+            $shops[] = [
+                'id' => $item['shop_id'],
+                'name' => $name !== '' ? $name : '—',
+                'domain' => $domain ? (string) $domain : ($name !== '' ? 'https://'.$name : '—'),
             ];
         }
+
+        return $shops;
+    }
+
+    private function withDebugDetails(string $message, Throwable $e): string
+    {
+        return Config::get('app.debug') ? $message.': '.$e->getMessage() : $message;
     }
 }

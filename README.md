@@ -57,11 +57,12 @@ IDOSELL_APPLICATION_ID=12345
 IDOSELL_DEVELOPER=twój-login-dewelopera
 IDOSELL_APPLICATION_KEY=twój-32-bajtowy-klucz-aplikacji
 IDOSELL_LAUNCH_ROUTE=app.panel
-
-# Konfiguracja awaryjna do testów lokalnych bez licencji w bazie
-IDOSELL_DEMO_DOMAIN=twoja-domena-sklepu.iai-shop.com
-IDOSELL_DEMO_API_KEY=twoj_klucz_api_admina
 ```
+
+Aplikacja nie ma trybu demo. Jedyna ścieżka dostępu: licencja zapisana przez SDK z webhooka
+`new-license` + uruchomienie z panelu IdoSell (webhook `launch` zwraca podpisany URL do `/`).
+Kontekst sprzedawcy (`client`) jest przenoszony w podpisanych URL-ach, a nie w sesji — panel
+działa w iframe panelu IdoSell, gdzie ciasteczko sesji nie dociera.
 
 > **Bezpieczeństwo**: Nigdy nie commituj pliku `.env` z realnymi kluczami. W repozytorium znajduje się wyłącznie szablon `.env.example`.
 
@@ -91,6 +92,7 @@ Pakiet SDK udostępnia wbudowane komendy Artisan do symulacji webhooków licencj
    ```bash
    php artisan idosell:simulate launch --client=555001
    ```
+   *W odpowiedzi (`redirect`) jest podpisany URL panelu (ważny `IDOSELL_LAUNCH_TTL` minut) — otwórz go w przeglądarce i kliknij „Pokaż sklepy”. Wejście na `/` bez podpisu kończy się 403.*
 
 3. **Symulacja usunięcia (odinstalowania licencji)**:
    ```bash

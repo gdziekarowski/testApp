@@ -35,9 +35,4 @@ return [
         ],
     ],
 
-    'idosell_demo' => [
-        'domain' => env('IDOSELL_DEMO_DOMAIN'),
-        'api_key' => env('IDOSELL_DEMO_API_KEY'),
-    ],
-
 ];
