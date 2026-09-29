@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cc82765c2918bdba4ffac94294eb2387",
+    "content-hash": "4b04b77b4b55401e550934e5b1cb34d7",
     "packages": [
         {
             "name": "brick/math",
@@ -1060,16 +1060,16 @@
         },
         {
             "name": "idosell/laravel-app-sdk",
-            "version": "v1.0.0",
+            "version": "v1.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/gdziekarowski/laravel-app-sdk.git",
-                "reference": "45caf8bf30476b9bb1d050dd914118602e2ca1e8"
+                "reference": "a9a890f8eb4b7ef23d7bf04ed85b66d5fe2ef316"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/gdziekarowski/laravel-app-sdk/zipball/45caf8bf30476b9bb1d050dd914118602e2ca1e8",
-                "reference": "45caf8bf30476b9bb1d050dd914118602e2ca1e8",
+                "url": "https://api.github.com/repos/gdziekarowski/laravel-app-sdk/zipball/a9a890f8eb4b7ef23d7bf04ed85b66d5fe2ef316",
+                "reference": "a9a890f8eb4b7ef23d7bf04ed85b66d5fe2ef316",
                 "shasum": ""
             },
             "require": {
@@ -1101,7 +1101,10 @@
                 "psr-4": {
                     "Idosell\\LaravelAppSdk\\": "src/",
                     "Idosell\\LaravelAppSdk\\Database\\Factories\\": "database/factories/"
-                }
+                },
+                "files": [
+                    "src/helpers.php"
+                ]
             },
             "autoload-dev": {
                 "psr-4": {
@@ -1136,10 +1139,10 @@
                 "webhooks"
             ],
             "support": {
-                "source": "https://github.com/gdziekarowski/laravel-app-sdk/tree/v1.0.0",
+                "source": "https://github.com/gdziekarowski/laravel-app-sdk/tree/v1.1.1",
                 "issues": "https://github.com/gdziekarowski/laravel-app-sdk/issues"
             },
-            "time": "2026-09-28T10:59:12+00:00"
+            "time": "2026-09-29T11:28:14+00:00"
         },
         {
             "name": "laravel/framework",
