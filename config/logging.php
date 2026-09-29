@@ -73,6 +73,15 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // Diagnostyka integracji IdoSell: webhooki (SDK), strefa panelu, zdarzenia licencji, Admin API.
+        'idosell' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/idosell.log'),
+            'level' => env('IDOSELL_LOG_LEVEL', 'debug'),
+            'max_files' => env('IDOSELL_LOG_DAYS', 14),
+            'replace_placeholders' => true,
+        ],
+
         'monthly' => [
             'driver' => 'monthly',
             'path' => storage_path('logs/laravel.log'),

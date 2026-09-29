@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
 class ExampleTest extends TestCase
@@ -12,9 +11,6 @@ class ExampleTest extends TestCase
      */
     public function test_the_application_returns_a_successful_response(): void
     {
-        $signedUrl = URL::signedRoute('app.panel', ['client' => 555001]);
-        $response = $this->get($signedUrl);
-
-        $response->assertStatus(200);
+        $this->get('/')->assertOk()->assertSee('Uruchom aplikację z panelu IdoSell');
     }
 }

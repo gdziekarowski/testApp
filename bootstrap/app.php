@@ -12,7 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->validateCsrfTokens(except: ['/']);
+        // Panel działa w iframe bez cookies sesji, więc token CSRF nie dotrze. Rolę tokenu
+        // pełni podpisany, czasowy URL weryfikowany przez `idosell.panel`.
+        $middleware->validateCsrfTokens(except: ['panel/*', 'panel']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

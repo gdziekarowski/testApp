@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use Idosell\LaravelAppSdk\Facades\Idosell;
 use Idosell\LaravelAppSdk\Models\IdosellLicense;
 use Idosell\LaravelAppSdk\Testing\InteractsWithIdosell;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,8 +19,6 @@ class ShopApplicationTest extends TestCase
 {
     use InteractsWithIdosell;
     use RefreshDatabase;
-
-    private const ACCESS_DENIED = 'Brak dostępu. Uruchom aplikację z panelu IdoSell.';
 
     protected function setUp(): void
     {
@@ -65,6 +64,18 @@ class ShopApplicationTest extends TestCase
     }
 
     /**
+     * Adres akcji formularza „Pokaż sklepy” z wyrenderowanego panelu.
+     */
+    private function fetchUrlFrom(TestResponse $panel): string
+    {
+        preg_match('/<form method="POST" action="([^"]+)"/', (string) $panel->getContent(), $matches);
+
+        $this->assertNotEmpty($matches, 'Brak formularza „Pokaż sklepy” w panelu.');
+
+        return html_entity_decode($matches[1]);
+    }
+
+    /**
      * Otwiera panel podpisanym URL (jak po launch) i zwraca podpisany adres formularza.
      */
     private function openPanel(int $clientId): string
@@ -77,20 +88,27 @@ class ShopApplicationTest extends TestCase
         $response->assertOk();
         $response->assertSee('Pokaż sklepy');
 
-        return (string) $response->viewData('fetchUrl');
+        return $this->fetchUrlFrom($response);
     }
 
     private function clickShowShops(string $fetchUrl): TestResponse
     {
-        // Bez ciasteczek — jak w iframe panelu IdoSell, gdzie sesja nie dociera.
+        // Bez ciasteczek i bez tokenu CSRF — jak w iframe panelu IdoSell, gdzie sesja nie dociera.
         $this->flushSession();
 
         return $this->post($fetchUrl);
     }
 
+    public function test_start_page_is_outside_the_panel_zone(): void
+    {
+        $this->get('/')->assertOk()->assertSee('Uruchom aplikację z panelu IdoSell');
+    }
+
     public function test_unsigned_panel_url_returns_403(): void
     {
-        $this->get('/?client=555001')->assertForbidden();
+        $this->licenseFor(555001, 'https://unsigned-shop.iai-shop.com');
+
+        $this->get('/panel?client=555001&application=12345')->assertForbidden();
     }
 
     public function test_signed_panel_without_client_returns_403(): void
@@ -120,13 +138,13 @@ class ShopApplicationTest extends TestCase
             ->assertJson(['status' => 'ok']);
 
         $redirect = (string) $launch->json('redirect');
+        $this->assertStringContainsString('/panel', $redirect);
         $this->assertStringContainsString('client=555010', $redirect);
         $this->assertStringContainsString('signature=', $redirect);
 
         $panel = $this->get($redirect)->assertOk();
-        $fetchUrl = (string) $panel->viewData('fetchUrl');
 
-        $response = $this->clickShowShops($fetchUrl);
+        $response = $this->clickShowShops($this->fetchUrlFrom($panel));
 
         $response->assertOk();
         $response->assertSee('flow-shop.iai-shop.com');
@@ -154,30 +172,58 @@ class ShopApplicationTest extends TestCase
         Http::assertSent(fn (HttpRequest $request): bool => $request->hasHeader('X-API-KEY', 'secret_license_key_555002'));
     }
 
-    public function test_post_without_signature_shows_access_denied_without_calling_api(): void
+    public function test_panel_links_carry_signed_context(): void
     {
+        $license = $this->licenseFor(555003, 'https://links-shop.iai-shop.com');
+
+        $panel = $this->get(Idosell::panelUrl('app.panel', [], $license))->assertOk();
+
+        preg_match('/id="nav-installation" href="([^"]+)"/', (string) $panel->getContent(), $matches);
+        $this->assertNotEmpty($matches);
+
+        $this->get(html_entity_decode($matches[1]))
+            ->assertOk()
+            ->assertSee('Dane instalacji')
+            ->assertSee('links-shop.iai-shop.com')
+            ->assertDontSee('secret_license_key_555003');
+    }
+
+    public function test_post_without_signature_returns_403_without_calling_api(): void
+    {
+        $this->licenseFor(555002, 'https://victim-shop.iai-shop.com');
         Http::fake();
 
-        $response = $this->post('/', ['client' => 555002]);
+        $this->post('/panel/sklepy?client=555002&application=12345')->assertForbidden();
 
-        $response->assertOk();
-        $response->assertSee(self::ACCESS_DENIED);
+        Http::assertNothingSent();
+    }
+
+    public function test_forged_signature_returns_403_without_calling_api(): void
+    {
+        $this->licenseFor(555002, 'https://victim-shop.iai-shop.com');
+        Http::fake();
+
+        $this->post('/panel/sklepy?client=555002&application=12345&signature=forged')->assertForbidden();
+
         Http::assertNothingSent();
     }
 
     public function test_client_in_body_cannot_override_signed_client(): void
     {
-        $this->licenseFor(555002, 'https://victim-shop.iai-shop.com');
-        Http::fake();
+        $this->licenseFor(555011, 'https://own-shop.iai-shop.com');
+        $this->licenseFor(555012, 'https://victim-shop.iai-shop.com');
+        $this->fakeShopsData('https://own-shop.iai-shop.com', [['shop_id' => 1, 'shop_name' => 'own-shop.iai-shop.com']]);
 
-        $response = $this->post('/?client=555002&signature=forged', ['client' => 555002]);
+        $this->flushSession();
+        $this->post($this->openPanel(555011), ['client' => 555012])
+            ->assertOk()
+            ->assertSee('own-shop.iai-shop.com');
 
-        $response->assertOk();
-        $response->assertSee(self::ACCESS_DENIED);
-        Http::assertNothingSent();
+        Http::assertSent(fn (HttpRequest $request): bool => str_starts_with($request->url(), 'https://own-shop.iai-shop.com'));
+        Http::assertNotSent(fn (HttpRequest $request): bool => str_starts_with($request->url(), 'https://victim-shop.iai-shop.com'));
     }
 
-    public function test_expired_signed_fetch_url_shows_access_denied(): void
+    public function test_expired_signed_fetch_url_returns_403(): void
     {
         $this->licenseFor(555004, 'https://expired-shop.iai-shop.com');
         Http::fake();
@@ -185,21 +231,20 @@ class ShopApplicationTest extends TestCase
         $fetchUrl = $this->openPanel(555004);
         $this->travel(31)->minutes();
 
-        $response = $this->clickShowShops($fetchUrl);
-
-        $response->assertSee(self::ACCESS_DENIED);
+        $this->clickShowShops($fetchUrl)->assertForbidden();
         Http::assertNothingSent();
     }
 
-    public function test_missing_or_inactive_license_shows_message_without_calling_api(): void
+    public function test_missing_or_inactive_license_returns_403(): void
     {
         IdosellLicense::factory()->inactive()->create(['client_id' => 555005, 'application_id' => 12345]);
-        Http::fake();
 
-        $this->clickShowShops($this->openPanel(555005))->assertSee('Brak aktywnej licencji w systemie.');
-        $this->clickShowShops($this->openPanel(555006))->assertSee('Brak aktywnej licencji w systemie.');
-
-        Http::assertNothingSent();
+        foreach ([555005, 555006] as $clientId) {
+            $this->get(URL::temporarySignedRoute('app.panel', now()->addMinutes(30), [
+                'client' => $clientId,
+                'application' => 12345,
+            ]))->assertForbidden();
+        }
     }
 
     public function test_unauthorized_api_key_error_401(): void

@@ -7,91 +7,57 @@ namespace App\Http\Controllers;
 use Idosell\LaravelAppSdk\Exceptions\ApiException;
 use Idosell\LaravelAppSdk\Facades\Idosell;
 use Idosell\LaravelAppSdk\Models\IdosellLicense;
+use Idosell\LaravelAppSdk\Support\LogChannel;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\URL;
 use Throwable;
 
 /**
- * Panel aplikacji otwierany z panelu IdoSell (webhook `launch` zwraca podpisany URL).
+ * Panel aplikacji otwierany z panelu IdoSell.
  *
- * Aplikacja działa w iframe panelu IdoSell (cross-site), gdzie przeglądarki nie odsyłają
- * ciasteczka sesji (SameSite=Lax, Safari ITP) — dlatego kontekstu sprzedawcy NIE trzymamy
- * w sesji. Tożsamość (`client`) pochodzi wyłącznie z podpisanego URL: wejście z launch
- * weryfikuje middleware `signed`, a formularz „Pokaż sklepy” wysyła POST na osobny,
- * czasowo podpisany URL (ten sam mechanizm co w onet: podpisany kontekst zamiast cookie).
+ * Wszystkie akcje leżą w strefie `idosell.panel`: middleware SDK zweryfikował podpis URL
+ * i znalazł aktywną licencję, więc kontroler bierze ją z `Idosell::currentLicense()`
+ * (albo przez wstrzyknięcie `IdosellLicense`) i nie sprawdza dostępu sam.
  */
 class ShopController extends Controller
 {
-    private const ACCESS_DENIED = 'Brak dostępu. Uruchom aplikację z panelu IdoSell.';
+    private const SHOPS_ENDPOINT = 'system/shopsData';
 
-    /**
-     * Wejście z panelu IdoSell — trasa z middleware `signed`, więc `client` jest zaufany.
-     */
-    public function index(Request $request): View
+    public function index(): View
     {
-        $clientId = $this->signedClientId($request);
-
-        if ($clientId === null) {
-            abort(403, self::ACCESS_DENIED);
-        }
-
-        return view('welcome', [
-            'clientId' => $clientId,
-            'fetchUrl' => $this->fetchUrl($clientId),
-            'shops' => null,
-            'error' => null,
-        ]);
+        return $this->render(Idosell::currentLicense());
     }
 
     /**
-     * „Pokaż sklepy” — `client` bierzemy tylko z podpisanego query stringu, nigdy z body.
+     * „Pokaż sklepy”: POST na podpisany URL z `idosell_route()`, bez cookies i tokenu CSRF.
      */
-    public function fetchShops(Request $request): View
+    public function fetchShops(IdosellLicense $license): View
     {
-        $clientId = $request->hasValidSignature() ? $this->signedClientId($request) : null;
-
-        if ($clientId === null) {
-            return $this->render(null, null, self::ACCESS_DENIED);
-        }
-
-        $license = Idosell::license($clientId);
-
-        if (! $license instanceof IdosellLicense || ! $license->active) {
-            return $this->render($clientId, null, 'Brak aktywnej licencji w systemie.');
-        }
-
         $result = $this->fetchShopsFromAdminApi($license);
 
-        return $this->render($clientId, $result['shops'], $result['error']);
+        return $this->render($license, $result['shops'], $result['error']);
     }
 
-    private function signedClientId(Request $request): ?int
+    /**
+     * Dane instalacji z licencji: do diagnozy, co SDK zapisało z webhooka `new-license`.
+     */
+    public function installation(IdosellLicense $license): View
     {
-        $clientId = (int) $request->query('client', 0);
-
-        return $clientId > 0 ? $clientId : null;
-    }
-
-    private function fetchUrl(int $clientId): string
-    {
-        return URL::temporarySignedRoute(
-            'app.shops.fetch',
-            now()->addMinutes((int) Config::get('idosell.launch.ttl', 30)),
-            ['client' => $clientId],
-        );
+        return view('panel.installation', [
+            'license' => $license,
+            'shops' => $license->shops(),
+            'linkTtl' => (int) Config::get('idosell.launch.ttl', 30),
+        ]);
     }
 
     /**
      * @param  array<int, array{id: int|string, name: string, domain: string}>|null  $shops
      */
-    private function render(?int $clientId, ?array $shops, ?string $error): View
+    private function render(IdosellLicense $license, ?array $shops = null, ?string $error = null): View
     {
         return view('welcome', [
-            'clientId' => $clientId,
-            'fetchUrl' => $clientId !== null ? $this->fetchUrl($clientId) : null,
+            'clientId' => $license->client_id,
             'shops' => $shops,
             'error' => $error,
         ]);
@@ -102,13 +68,23 @@ class ShopController extends Controller
      */
     private function fetchShopsFromAdminApi(IdosellLicense $license): array
     {
+        $context = [
+            'client_id' => (int) $license->client_id,
+            'domain' => $license->domain(),
+            'endpoint' => self::SHOPS_ENDPOINT,
+        ];
+
         try {
             $client = $license->adminApi(timeout: 5, retries: 0);
-            $response = $client->get($client->admin('system/shopsData'));
+            $response = $client->get($client->admin(self::SHOPS_ENDPOINT));
+            $shops = $this->mapShops($response['shop_contact'] ?? []);
 
-            return ['shops' => $this->mapShops($response['shop_contact'] ?? []), 'error' => null];
+            LogChannel::resolve()->debug('Admin API: pobrano sklepy.', [...$context, 'shops' => count($shops)]);
+
+            return ['shops' => $shops, 'error' => null];
         } catch (ApiException $e) {
             report($e);
+            LogChannel::resolve()->warning('Admin API: błąd odpowiedzi.', [...$context, 'status' => $e->status]);
 
             $message = in_array($e->status, [401, 403], true)
                 ? 'Błąd autoryzacji: Odrzucono klucz API sklepu (status HTTP '.$e->status.').'
@@ -117,10 +93,12 @@ class ShopController extends Controller
             return ['shops' => null, 'error' => $this->withDebugDetails($message, $e)];
         } catch (ConnectionException $e) {
             report($e);
+            LogChannel::resolve()->warning('Admin API: brak połączenia.', $context);
 
             return ['shops' => null, 'error' => $this->withDebugDetails('Brak połączenia z serwerem IdoSell', $e)];
         } catch (Throwable $e) {
             report($e);
+            LogChannel::resolve()->error('Admin API: nieoczekiwany błąd.', [...$context, 'exception' => $e::class]);
 
             return ['shops' => null, 'error' => $this->withDebugDetails('Wystąpił nieoczekiwany błąd', $e)];
         }

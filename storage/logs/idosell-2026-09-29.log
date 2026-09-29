@@ -1,0 +1,126 @@
+[2026-09-29 10:39:53] testing.DEBUG: Panel ▶ GET /panel {"method":"GET","path":"/panel","route":"app.panel","client":"555001","application":"12345","has_signature":false,"signature_valid":false,"expires_in_s":null} 
+[2026-09-29 10:39:53] testing.DEBUG: IdoSell panel: odmowa dostępu. {"path":"panel","reason":"signature","client_id":null} 
+[2026-09-29 10:39:53] testing.WARNING: Panel ◀ /panel → HTTP 403 {"route":"app.panel","client":"555001","signature_valid":false,"license_id":null,"license_active":null} 
+[2026-09-29 10:39:54] testing.DEBUG: Panel ▶ GET /panel {"method":"GET","path":"/panel","route":"app.panel","client":null,"application":null,"has_signature":true,"signature_valid":true,"expires_in_s":null} 
+[2026-09-29 10:39:54] testing.DEBUG: IdoSell panel: odmowa dostępu. {"path":"panel","reason":"context","client_id":null} 
+[2026-09-29 10:39:54] testing.WARNING: Panel ◀ /panel → HTTP 403 {"route":"app.panel","client":null,"signature_valid":true,"license_id":null,"license_active":null} 
+[2026-09-29 10:39:54] testing.DEBUG: IdoSell webhook ▶ POST /api/idosell/webhooks/new-license {"route":"idosell.webhooks.new-license","content_type":"application/json","payload":{"client_id":555010,"application_id":12345,"api_url":"https://flow-shop.iai-shop.com/api","api_key":"[redacted len=60]","api_license":"[redacted len=25]","authorization_type":"key","selected_shops":[{"id":1,"name":"Sklep 1"}],"sign":"[redacted len=64]"}} 
+[2026-09-29 10:39:54] testing.INFO: Licencja aktywowana. {"client_id":555010,"application_id":12345,"active":true,"domain":"flow-shop.iai-shop.com","authorization_type":"key","is_new":true,"installation_confirmed":true,"shops":1} 
+[2026-09-29 10:39:54] testing.DEBUG: IdoSell webhook ◀ /api/idosell/webhooks/new-license → HTTP 200 {"route":"idosell.webhooks.new-license"} 
+[2026-09-29 10:39:54] testing.DEBUG: IdoSell webhook ▶ POST /api/idosell/webhooks/launch {"route":"idosell.webhooks.launch","content_type":"application/json","payload":{"client_id":555010,"application_id":12345,"api_url":"https://demo-shop.example.com/api","api_license":"[redacted len=25]","sign":"[redacted len=64]"}} 
+[2026-09-29 10:39:54] testing.INFO: Uruchomienie aplikacji z panelu IdoSell. {"client_id":555010,"application_id":12345,"redirect_path":"/panel","redirect_signed":true} 
+[2026-09-29 10:39:54] testing.DEBUG: IdoSell webhook ◀ /api/idosell/webhooks/launch → HTTP 200 {"route":"idosell.webhooks.launch"} 
+[2026-09-29 10:39:54] testing.DEBUG: Panel ▶ GET /panel {"method":"GET","path":"/panel","route":"app.panel","client":"555010","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 10:39:54] testing.DEBUG: Panel ◀ /panel → HTTP 200 {"route":"app.panel","client":"555010","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 10:39:54] testing.DEBUG: Panel ▶ POST /panel/sklepy {"method":"POST","path":"/panel/sklepy","route":"app.shops.fetch","client":"555010","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 10:39:54] testing.DEBUG: Admin API: pobrano sklepy. {"client_id":555010,"domain":"flow-shop.iai-shop.com","endpoint":"system/shopsData","shops":2} 
+[2026-09-29 10:39:54] testing.DEBUG: Panel ◀ /panel/sklepy → HTTP 200 {"route":"app.shops.fetch","client":"555010","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 10:39:55] testing.DEBUG: Panel ▶ GET /panel {"method":"GET","path":"/panel","route":"app.panel","client":"555002","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 10:39:55] testing.DEBUG: Panel ◀ /panel → HTTP 200 {"route":"app.panel","client":"555002","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 10:39:55] testing.DEBUG: Panel ▶ POST /panel/sklepy {"method":"POST","path":"/panel/sklepy","route":"app.shops.fetch","client":"555002","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 10:39:55] testing.DEBUG: Admin API: pobrano sklepy. {"client_id":555002,"domain":"signed-shop.iai-shop.com","endpoint":"system/shopsData","shops":1} 
+[2026-09-29 10:39:55] testing.DEBUG: Panel ◀ /panel/sklepy → HTTP 200 {"route":"app.shops.fetch","client":"555002","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 10:39:55] testing.DEBUG: Panel ▶ GET /panel {"method":"GET","path":"/panel","route":"app.panel","client":"555003","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 10:39:55] testing.DEBUG: Panel ◀ /panel → HTTP 200 {"route":"app.panel","client":"555003","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 10:39:55] testing.DEBUG: Panel ▶ GET /panel/instalacja {"method":"GET","path":"/panel/instalacja","route":"app.installation","client":"555003","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 10:39:55] testing.DEBUG: Panel ◀ /panel/instalacja → HTTP 200 {"route":"app.installation","client":"555003","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 10:39:55] testing.DEBUG: Panel ▶ POST /panel/sklepy {"method":"POST","path":"/panel/sklepy","route":"app.shops.fetch","client":"555002","application":"12345","has_signature":false,"signature_valid":false,"expires_in_s":null} 
+[2026-09-29 10:39:55] testing.DEBUG: IdoSell panel: odmowa dostępu. {"path":"panel/sklepy","reason":"signature","client_id":null} 
+[2026-09-29 10:39:55] testing.WARNING: Panel ◀ /panel/sklepy → HTTP 403 {"route":"app.shops.fetch","client":"555002","signature_valid":false,"license_id":null,"license_active":null} 
+[2026-09-29 10:39:55] testing.DEBUG: Panel ▶ POST /panel/sklepy {"method":"POST","path":"/panel/sklepy","route":"app.shops.fetch","client":"555002","application":"12345","has_signature":true,"signature_valid":false,"expires_in_s":null} 
+[2026-09-29 10:39:55] testing.DEBUG: IdoSell panel: odmowa dostępu. {"path":"panel/sklepy","reason":"signature","client_id":null} 
+[2026-09-29 10:39:55] testing.WARNING: Panel ◀ /panel/sklepy → HTTP 403 {"route":"app.shops.fetch","client":"555002","signature_valid":false,"license_id":null,"license_active":null} 
+[2026-09-29 10:39:56] testing.DEBUG: Panel ▶ GET /panel {"method":"GET","path":"/panel","route":"app.panel","client":"555011","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 10:39:56] testing.DEBUG: Panel ◀ /panel → HTTP 200 {"route":"app.panel","client":"555011","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 10:39:56] testing.DEBUG: Panel ▶ POST /panel/sklepy {"method":"POST","path":"/panel/sklepy","route":"app.shops.fetch","client":"555011","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 10:39:56] testing.DEBUG: Admin API: pobrano sklepy. {"client_id":555011,"domain":"own-shop.iai-shop.com","endpoint":"system/shopsData","shops":1} 
+[2026-09-29 10:39:56] testing.DEBUG: Panel ◀ /panel/sklepy → HTTP 200 {"route":"app.shops.fetch","client":"555011","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 10:39:57] testing.DEBUG: Panel ▶ GET /panel {"method":"GET","path":"/panel","route":"app.panel","client":"555004","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 10:39:57] testing.DEBUG: Panel ◀ /panel → HTTP 200 {"route":"app.panel","client":"555004","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 10:39:57] testing.DEBUG: Panel ▶ POST /panel/sklepy {"method":"POST","path":"/panel/sklepy","route":"app.shops.fetch","client":"555004","application":"12345","has_signature":true,"signature_valid":false,"expires_in_s":-60} 
+[2026-09-29 10:39:57] testing.DEBUG: IdoSell panel: odmowa dostępu. {"path":"panel/sklepy","reason":"signature","client_id":null} 
+[2026-09-29 10:39:57] testing.WARNING: Panel ◀ /panel/sklepy → HTTP 403 {"route":"app.shops.fetch","client":"555004","signature_valid":false,"license_id":null,"license_active":null} 
+[2026-09-29 10:39:57] testing.DEBUG: Panel ▶ GET /panel {"method":"GET","path":"/panel","route":"app.panel","client":"555005","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 10:39:57] testing.DEBUG: IdoSell panel: odmowa dostępu. {"path":"panel","reason":"license","client_id":555005} 
+[2026-09-29 10:39:57] testing.WARNING: Panel ◀ /panel → HTTP 403 {"route":"app.panel","client":"555005","signature_valid":true,"license_id":null,"license_active":null} 
+[2026-09-29 10:39:57] testing.DEBUG: Panel ▶ GET /panel {"method":"GET","path":"/panel","route":"app.panel","client":"555006","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 10:39:57] testing.DEBUG: IdoSell panel: odmowa dostępu. {"path":"panel","reason":"license","client_id":555006} 
+[2026-09-29 10:39:57] testing.WARNING: Panel ◀ /panel → HTTP 403 {"route":"app.panel","client":"555006","signature_valid":true,"license_id":null,"license_active":null} 
+[2026-09-29 10:39:58] testing.DEBUG: Panel ▶ GET /panel {"method":"GET","path":"/panel","route":"app.panel","client":"555007","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 10:39:58] testing.DEBUG: Panel ◀ /panel → HTTP 200 {"route":"app.panel","client":"555007","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 10:39:58] testing.DEBUG: Panel ▶ POST /panel/sklepy {"method":"POST","path":"/panel/sklepy","route":"app.shops.fetch","client":"555007","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 10:39:58] testing.WARNING: Admin API: błąd odpowiedzi. {"client_id":555007,"domain":"auth-shop.iai-shop.com","endpoint":"system/shopsData","status":401} 
+[2026-09-29 10:39:58] testing.DEBUG: Panel ◀ /panel/sklepy → HTTP 200 {"route":"app.shops.fetch","client":"555007","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 10:39:58] testing.DEBUG: Panel ▶ GET /panel {"method":"GET","path":"/panel","route":"app.panel","client":"555008","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 10:39:58] testing.DEBUG: Panel ◀ /panel → HTTP 200 {"route":"app.panel","client":"555008","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 10:39:58] testing.DEBUG: Panel ▶ POST /panel/sklepy {"method":"POST","path":"/panel/sklepy","route":"app.shops.fetch","client":"555008","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 10:39:58] testing.WARNING: Admin API: błąd odpowiedzi. {"client_id":555008,"domain":"error-shop.iai-shop.com","endpoint":"system/shopsData","status":500} 
+[2026-09-29 10:39:58] testing.DEBUG: Panel ◀ /panel/sklepy → HTTP 200 {"route":"app.shops.fetch","client":"555008","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 10:39:59] testing.DEBUG: Panel ▶ GET /panel {"method":"GET","path":"/panel","route":"app.panel","client":"555009","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1799} 
+[2026-09-29 10:39:59] testing.DEBUG: Panel ◀ /panel → HTTP 200 {"route":"app.panel","client":"555009","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 10:39:59] testing.DEBUG: Panel ▶ POST /panel/sklepy {"method":"POST","path":"/panel/sklepy","route":"app.shops.fetch","client":"555009","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 10:39:59] testing.WARNING: Admin API: brak połączenia. {"client_id":555009,"domain":"down-shop.iai-shop.com","endpoint":"system/shopsData"} 
+[2026-09-29 10:39:59] testing.DEBUG: Panel ◀ /panel/sklepy → HTTP 200 {"route":"app.shops.fetch","client":"555009","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 11:36:58] testing.DEBUG: Panel ▶ GET /panel {"method":"GET","path":"/panel","route":"app.panel","client":"555001","application":"12345","has_signature":false,"signature_valid":false,"expires_in_s":null} 
+[2026-09-29 11:36:58] testing.DEBUG: IdoSell panel: odmowa dostępu. {"path":"panel","reason":"signature","client_id":null} 
+[2026-09-29 11:36:58] testing.WARNING: Panel ◀ /panel → HTTP 403 {"route":"app.panel","client":"555001","signature_valid":false,"license_id":null,"license_active":null} 
+[2026-09-29 11:36:59] testing.DEBUG: Panel ▶ GET /panel {"method":"GET","path":"/panel","route":"app.panel","client":null,"application":null,"has_signature":true,"signature_valid":true,"expires_in_s":null} 
+[2026-09-29 11:36:59] testing.DEBUG: IdoSell panel: odmowa dostępu. {"path":"panel","reason":"context","client_id":null} 
+[2026-09-29 11:36:59] testing.WARNING: Panel ◀ /panel → HTTP 403 {"route":"app.panel","client":null,"signature_valid":true,"license_id":null,"license_active":null} 
+[2026-09-29 11:36:59] testing.DEBUG: IdoSell webhook ▶ POST /api/idosell/webhooks/new-license {"route":"idosell.webhooks.new-license","content_type":"application/json","payload":{"client_id":555010,"application_id":12345,"api_url":"https://flow-shop.iai-shop.com/api","api_key":"[redacted len=60]","api_license":"[redacted len=25]","authorization_type":"key","selected_shops":[{"id":1,"name":"Sklep 1"}],"sign":"[redacted len=64]"}} 
+[2026-09-29 11:36:59] testing.INFO: Licencja aktywowana. {"client_id":555010,"application_id":12345,"active":true,"domain":"flow-shop.iai-shop.com","authorization_type":"key","is_new":true,"installation_confirmed":true,"shops":1} 
+[2026-09-29 11:36:59] testing.DEBUG: IdoSell webhook ◀ /api/idosell/webhooks/new-license → HTTP 200 {"route":"idosell.webhooks.new-license"} 
+[2026-09-29 11:36:59] testing.DEBUG: IdoSell webhook ▶ POST /api/idosell/webhooks/launch {"route":"idosell.webhooks.launch","content_type":"application/json","payload":{"client_id":555010,"application_id":12345,"api_url":"https://demo-shop.example.com/api","api_license":"[redacted len=25]","sign":"[redacted len=64]"}} 
+[2026-09-29 11:36:59] testing.INFO: Uruchomienie aplikacji z panelu IdoSell. {"client_id":555010,"application_id":12345,"redirect_path":"/panel","redirect_signed":true} 
+[2026-09-29 11:36:59] testing.DEBUG: IdoSell webhook ◀ /api/idosell/webhooks/launch → HTTP 200 {"route":"idosell.webhooks.launch"} 
+[2026-09-29 11:36:59] testing.DEBUG: Panel ▶ GET /panel {"method":"GET","path":"/panel","route":"app.panel","client":"555010","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 11:36:59] testing.DEBUG: Panel ◀ /panel → HTTP 200 {"route":"app.panel","client":"555010","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 11:36:59] testing.DEBUG: Panel ▶ POST /panel/sklepy {"method":"POST","path":"/panel/sklepy","route":"app.shops.fetch","client":"555010","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 11:36:59] testing.DEBUG: Admin API: pobrano sklepy. {"client_id":555010,"domain":"flow-shop.iai-shop.com","endpoint":"system/shopsData","shops":2} 
+[2026-09-29 11:36:59] testing.DEBUG: Panel ◀ /panel/sklepy → HTTP 200 {"route":"app.shops.fetch","client":"555010","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 11:36:59] testing.DEBUG: Panel ▶ GET /panel {"method":"GET","path":"/panel","route":"app.panel","client":"555002","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 11:36:59] testing.DEBUG: Panel ◀ /panel → HTTP 200 {"route":"app.panel","client":"555002","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 11:36:59] testing.DEBUG: Panel ▶ POST /panel/sklepy {"method":"POST","path":"/panel/sklepy","route":"app.shops.fetch","client":"555002","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 11:36:59] testing.DEBUG: Admin API: pobrano sklepy. {"client_id":555002,"domain":"signed-shop.iai-shop.com","endpoint":"system/shopsData","shops":1} 
+[2026-09-29 11:36:59] testing.DEBUG: Panel ◀ /panel/sklepy → HTTP 200 {"route":"app.shops.fetch","client":"555002","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 11:37:00] testing.DEBUG: Panel ▶ GET /panel {"method":"GET","path":"/panel","route":"app.panel","client":"555003","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 11:37:00] testing.DEBUG: Panel ◀ /panel → HTTP 200 {"route":"app.panel","client":"555003","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 11:37:00] testing.DEBUG: Panel ▶ GET /panel/instalacja {"method":"GET","path":"/panel/instalacja","route":"app.installation","client":"555003","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 11:37:00] testing.DEBUG: Panel ◀ /panel/instalacja → HTTP 200 {"route":"app.installation","client":"555003","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 11:37:00] testing.DEBUG: Panel ▶ POST /panel/sklepy {"method":"POST","path":"/panel/sklepy","route":"app.shops.fetch","client":"555002","application":"12345","has_signature":false,"signature_valid":false,"expires_in_s":null} 
+[2026-09-29 11:37:00] testing.DEBUG: IdoSell panel: odmowa dostępu. {"path":"panel/sklepy","reason":"signature","client_id":null} 
+[2026-09-29 11:37:00] testing.WARNING: Panel ◀ /panel/sklepy → HTTP 403 {"route":"app.shops.fetch","client":"555002","signature_valid":false,"license_id":null,"license_active":null} 
+[2026-09-29 11:37:00] testing.DEBUG: Panel ▶ POST /panel/sklepy {"method":"POST","path":"/panel/sklepy","route":"app.shops.fetch","client":"555002","application":"12345","has_signature":true,"signature_valid":false,"expires_in_s":null} 
+[2026-09-29 11:37:00] testing.DEBUG: IdoSell panel: odmowa dostępu. {"path":"panel/sklepy","reason":"signature","client_id":null} 
+[2026-09-29 11:37:00] testing.WARNING: Panel ◀ /panel/sklepy → HTTP 403 {"route":"app.shops.fetch","client":"555002","signature_valid":false,"license_id":null,"license_active":null} 
+[2026-09-29 11:37:01] testing.DEBUG: Panel ▶ GET /panel {"method":"GET","path":"/panel","route":"app.panel","client":"555011","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 11:37:01] testing.DEBUG: Panel ◀ /panel → HTTP 200 {"route":"app.panel","client":"555011","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 11:37:01] testing.DEBUG: Panel ▶ POST /panel/sklepy {"method":"POST","path":"/panel/sklepy","route":"app.shops.fetch","client":"555011","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 11:37:01] testing.DEBUG: Admin API: pobrano sklepy. {"client_id":555011,"domain":"own-shop.iai-shop.com","endpoint":"system/shopsData","shops":1} 
+[2026-09-29 11:37:01] testing.DEBUG: Panel ◀ /panel/sklepy → HTTP 200 {"route":"app.shops.fetch","client":"555011","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 11:37:01] testing.DEBUG: Panel ▶ GET /panel {"method":"GET","path":"/panel","route":"app.panel","client":"555004","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 11:37:01] testing.DEBUG: Panel ◀ /panel → HTTP 200 {"route":"app.panel","client":"555004","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 11:37:01] testing.DEBUG: Panel ▶ POST /panel/sklepy {"method":"POST","path":"/panel/sklepy","route":"app.shops.fetch","client":"555004","application":"12345","has_signature":true,"signature_valid":false,"expires_in_s":-60} 
+[2026-09-29 11:37:01] testing.DEBUG: IdoSell panel: odmowa dostępu. {"path":"panel/sklepy","reason":"signature","client_id":null} 
+[2026-09-29 11:37:01] testing.WARNING: Panel ◀ /panel/sklepy → HTTP 403 {"route":"app.shops.fetch","client":"555004","signature_valid":false,"license_id":null,"license_active":null} 
+[2026-09-29 11:37:01] testing.DEBUG: Panel ▶ GET /panel {"method":"GET","path":"/panel","route":"app.panel","client":"555005","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 11:37:01] testing.DEBUG: IdoSell panel: odmowa dostępu. {"path":"panel","reason":"license","client_id":555005} 
+[2026-09-29 11:37:01] testing.WARNING: Panel ◀ /panel → HTTP 403 {"route":"app.panel","client":"555005","signature_valid":true,"license_id":null,"license_active":null} 
+[2026-09-29 11:37:01] testing.DEBUG: Panel ▶ GET /panel {"method":"GET","path":"/panel","route":"app.panel","client":"555006","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 11:37:01] testing.DEBUG: IdoSell panel: odmowa dostępu. {"path":"panel","reason":"license","client_id":555006} 
+[2026-09-29 11:37:01] testing.WARNING: Panel ◀ /panel → HTTP 403 {"route":"app.panel","client":"555006","signature_valid":true,"license_id":null,"license_active":null} 
+[2026-09-29 11:37:02] testing.DEBUG: Panel ▶ GET /panel {"method":"GET","path":"/panel","route":"app.panel","client":"555007","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 11:37:02] testing.DEBUG: Panel ◀ /panel → HTTP 200 {"route":"app.panel","client":"555007","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 11:37:02] testing.DEBUG: Panel ▶ POST /panel/sklepy {"method":"POST","path":"/panel/sklepy","route":"app.shops.fetch","client":"555007","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 11:37:02] testing.WARNING: Admin API: błąd odpowiedzi. {"client_id":555007,"domain":"auth-shop.iai-shop.com","endpoint":"system/shopsData","status":401} 
+[2026-09-29 11:37:02] testing.DEBUG: Panel ◀ /panel/sklepy → HTTP 200 {"route":"app.shops.fetch","client":"555007","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 11:37:02] testing.DEBUG: Panel ▶ GET /panel {"method":"GET","path":"/panel","route":"app.panel","client":"555008","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 11:37:02] testing.DEBUG: Panel ◀ /panel → HTTP 200 {"route":"app.panel","client":"555008","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 11:37:02] testing.DEBUG: Panel ▶ POST /panel/sklepy {"method":"POST","path":"/panel/sklepy","route":"app.shops.fetch","client":"555008","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 11:37:02] testing.WARNING: Admin API: błąd odpowiedzi. {"client_id":555008,"domain":"error-shop.iai-shop.com","endpoint":"system/shopsData","status":500} 
+[2026-09-29 11:37:02] testing.DEBUG: Panel ◀ /panel/sklepy → HTTP 200 {"route":"app.shops.fetch","client":"555008","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 11:37:02] testing.DEBUG: Panel ▶ GET /panel {"method":"GET","path":"/panel","route":"app.panel","client":"555009","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 11:37:02] testing.DEBUG: Panel ◀ /panel → HTTP 200 {"route":"app.panel","client":"555009","signature_valid":true,"license_id":1,"license_active":true} 
+[2026-09-29 11:37:02] testing.DEBUG: Panel ▶ POST /panel/sklepy {"method":"POST","path":"/panel/sklepy","route":"app.shops.fetch","client":"555009","application":"12345","has_signature":true,"signature_valid":true,"expires_in_s":1800} 
+[2026-09-29 11:37:02] testing.WARNING: Admin API: brak połączenia. {"client_id":555009,"domain":"down-shop.iai-shop.com","endpoint":"system/shopsData"} 
+[2026-09-29 11:37:02] testing.DEBUG: Panel ◀ /panel/sklepy → HTTP 200 {"route":"app.shops.fetch","client":"555009","signature_valid":true,"license_id":1,"license_active":true} 

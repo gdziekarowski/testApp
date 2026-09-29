@@ -13,7 +13,7 @@
     ],
     "require": {
         "php": "^8.3",
-        "idosell/laravel-app-sdk": "^1.0",
+        "idosell/laravel-app-sdk": "^1.1",
         "laravel/framework": "^13.17",
         "laravel/tinker": "^3.0"
     },

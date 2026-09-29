@@ -148,7 +148,7 @@ return [
     */
 
     'logging' => [
-        'channel' => env('IDOSELL_LOG_CHANNEL'),
+        'channel' => env('IDOSELL_LOG_CHANNEL', 'idosell'),
         'webhooks' => (bool) env('IDOSELL_LOG_WEBHOOKS', true),
         'redact' => [
             'api_key', 'apikey', 'api_license', 'sign', 'token', 'secret', 'password',

@@ -60,9 +60,40 @@ IDOSELL_LAUNCH_ROUTE=app.panel
 ```
 
 Aplikacja nie ma trybu demo. Jedyna ścieżka dostępu: licencja zapisana przez SDK z webhooka
-`new-license` + uruchomienie z panelu IdoSell (webhook `launch` zwraca podpisany URL do `/`).
-Kontekst sprzedawcy (`client`) jest przenoszony w podpisanych URL-ach, a nie w sesji — panel
-działa w iframe panelu IdoSell, gdzie ciasteczko sesji nie dociera.
+`new-license` + uruchomienie z panelu IdoSell (webhook `launch` zwraca podpisany URL do `/panel`).
+
+## Strefa panelu (`idosell.panel`)
+
+`routes/web.php`:
+
+| Trasa | Nazwa | Dostęp |
+|-------|-------|--------|
+| `GET /` | `home` | publiczna, poza strefą |
+| `GET /panel` | `app.panel` | `idosell.panel` |
+| `POST /panel/sklepy` | `app.shops.fetch` | `idosell.panel` |
+| `GET /panel/instalacja` | `app.installation` | `idosell.panel` |
+
+Middleware SDK wpuszcza tylko z podpisanym URL i aktywną licencją, w przeciwnym razie 403.
+Kontroler bierze licencję z `Idosell::currentLicense()` lub przez wstrzyknięcie `IdosellLicense`.
+Linki i formularze w widokach budowane są przez `idosell_route()`. Trasy `panel/*` są wyłączone
+z CSRF (`bootstrap/app.php`), bo w iframe nie ma cookies sesji, a żądanie chroni podpisany URL.
+
+## Logi diagnostyczne
+
+Kanał `idosell` zapisuje do `storage/logs/idosell-YYYY-MM-DD.log`:
+
+- webhooki (SDK, `debug`, przed weryfikacją podpisu, z maskowaniem sekretów),
+- każde wejście do strefy panelu: `client`, `application`, czy jest podpis, czy jest ważny,
+  ile sekund do wygaśnięcia, status odpowiedzi, znaleziona licencja (`LogPanelRequest`),
+- zdarzenia licencji: aktywacja, deaktywacja, launch (`LogIdosellLifecycle`),
+- wywołania Admin API: liczba sklepów albo status błędu.
+
+Logi nie zawierają kluczy API, `api_license`, danych kontaktowych ani wartości `signature`.
+Poziom: `IDOSELL_LOG_LEVEL` (domyślnie `debug`), retencja: `IDOSELL_LOG_DAYS` (14 dni).
+
+```bash
+tail -f storage/logs/idosell-*.log
+```
 
 > **Bezpieczeństwo**: Nigdy nie commituj pliku `.env` z realnymi kluczami. W repozytorium znajduje się wyłącznie szablon `.env.example`.
 
@@ -92,7 +123,7 @@ Pakiet SDK udostępnia wbudowane komendy Artisan do symulacji webhooków licencj
    ```bash
    php artisan idosell:simulate launch --client=555001
    ```
-   *W odpowiedzi (`redirect`) jest podpisany URL panelu (ważny `IDOSELL_LAUNCH_TTL` minut) — otwórz go w przeglądarce i kliknij „Pokaż sklepy”. Wejście na `/` bez podpisu kończy się 403.*
+   *W odpowiedzi (`redirect`) jest podpisany URL panelu (ważny `IDOSELL_LAUNCH_TTL` minut) — otwórz go w przeglądarce i kliknij „Pokaż sklepy”. Wejście na `/panel` bez podpisu kończy się 403.*
 
 3. **Symulacja usunięcia (odinstalowania licencji)**:
    ```bash
