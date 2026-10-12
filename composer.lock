@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4b04b77b4b55401e550934e5b1cb34d7",
+    "content-hash": "2b7b3386a6363a0a1dac3686739caf6c",
     "packages": [
         {
             "name": "brick/math",
@@ -1060,16 +1060,16 @@
         },
         {
             "name": "idosell/laravel-app-sdk",
-            "version": "v1.1.1",
+            "version": "2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/gdziekarowski/laravel-app-sdk.git",
-                "reference": "a9a890f8eb4b7ef23d7bf04ed85b66d5fe2ef316"
+                "reference": "b0e21b7c5074306f44815f27b2e7a8936831d058"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/gdziekarowski/laravel-app-sdk/zipball/a9a890f8eb4b7ef23d7bf04ed85b66d5fe2ef316",
-                "reference": "a9a890f8eb4b7ef23d7bf04ed85b66d5fe2ef316",
+                "url": "https://api.github.com/repos/gdziekarowski/laravel-app-sdk/zipball/b0e21b7c5074306f44815f27b2e7a8936831d058",
+                "reference": "b0e21b7c5074306f44815f27b2e7a8936831d058",
                 "shasum": ""
             },
             "require": {
@@ -1139,10 +1139,10 @@
                 "webhooks"
             ],
             "support": {
-                "source": "https://github.com/gdziekarowski/laravel-app-sdk/tree/v1.1.1",
+                "source": "https://github.com/gdziekarowski/laravel-app-sdk/tree/2.0.0",
                 "issues": "https://github.com/gdziekarowski/laravel-app-sdk/issues"
             },
-            "time": "2026-09-29T11:28:14+00:00"
+            "time": "2026-10-12T14:57:47+00:00"
         },
         {
             "name": "laravel/framework",
