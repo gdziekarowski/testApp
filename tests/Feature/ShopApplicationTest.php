@@ -125,7 +125,7 @@ class ShopApplicationTest extends TestCase
                     ['shop_id' => 2, 'shop_name' => 'Drugi sklep', 'shop_url' => 'https://drugi.example.com'],
                 ],
             ], 200),
-        ]);
+        ], clientId: 555010);
 
         $this->postIdosellNewLicense([
             'client_id' => 555010,

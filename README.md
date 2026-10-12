@@ -86,7 +86,11 @@ Kanał `idosell` zapisuje do `storage/logs/idosell-YYYY-MM-DD.log`:
 - każde wejście do strefy panelu: `client`, `application`, czy jest podpis, czy jest ważny,
   ile sekund do wygaśnięcia, status odpowiedzi, znaleziona licencja (`LogPanelRequest`),
 - zdarzenia licencji: aktywacja, deaktywacja, launch (`LogIdosellLifecycle`),
-- wywołania Admin API: liczba sklepów albo status błędu.
+- wywołania Admin API: liczba sklepów albo status błędu,
+- odpowiedzi Apps API (`LogIdosellAppsApi`): KSZTAŁT odpowiedzi `application/license` (nazwy pól,
+  `client.id`, czy numer licencji zgadza się z zapytaniem) i status `installation/done` — bez numeru
+  licencji i nazwy klienta. Po jednej instalacji w panelu demo widać, czy SDK poprawnie weryfikuje
+  właściciela licencji (`grep "application/license" storage/logs/idosell-*.log`).
 
 Logi nie zawierają kluczy API, `api_license`, danych kontaktowych ani wartości `signature`.
 Poziom: `IDOSELL_LOG_LEVEL` (domyślnie `debug`), retencja: `IDOSELL_LOG_DAYS` (14 dni).
@@ -112,6 +116,14 @@ Aplikacja będzie dostępna pod adresem: `http://127.0.0.1:8000`.
 ## 🧪 Symulacja Przepływu Licencji i Webhooków SDK (bez panelu IdoSell)
 
 Pakiet SDK udostępnia wbudowane komendy Artisan do symulacji webhooków licencji bez potrzeby podłączania żywego panelu sprzedawcy:
+
+Licencja testowa z `simulate` nie istnieje w Apps API i nie przejdzie `installation/done`, więc na czas
+symulacji ustaw w `.env` (nigdy na produkcji):
+
+```dotenv
+IDOSELL_APP_TYPE=downloadable
+IDOSELL_VERIFY_LICENSE_OWNER=false
+```
 
 1. **Symulacja instalacji (nowej licencji)**:
    ```bash

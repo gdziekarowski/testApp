@@ -81,7 +81,8 @@ class IdosellLoggingTest extends TestCase
 
     public function test_logs_license_lifecycle_and_launch_without_secrets(): void
     {
-        $this->fakeIdosellApps();
+        // Atrapa Apps API przypisuje licencję temu klientowi — SDK weryfikuje właściciela.
+        $this->fakeIdosellApps(clientId: 555003);
 
         $this->postIdosellNewLicense([
             'client_id' => 555003,
@@ -103,5 +104,25 @@ class IdosellLoggingTest extends TestCase
         $this->assertStringNotContainsString('jan.kowalski@example.com', $logged);
         parse_str((string) parse_url($redirect, PHP_URL_QUERY), $query);
         $this->assertStringNotContainsString($query['signature'], $logged);
+    }
+
+    public function test_logs_apps_api_license_shape_without_license_number_or_client_name(): void
+    {
+        $this->fakeIdosellApps(clientId: 555004);
+
+        $this->postIdosellNewLicense(['client_id' => 555004])->assertJson(['status' => 'ok']);
+
+        $entry = collect($this->handler->getRecords())
+            ->first(fn (LogRecord $r): bool => $r->message === 'Apps API application/license: kształt odpowiedzi.');
+
+        $this->assertNotNull($entry);
+        $this->assertSame('license', $entry->context['license_container']);
+        $this->assertSame(555004, $entry->context['entries'][0]['client_id']);
+        $this->assertTrue($entry->context['entries'][0]['number_matches_request']);
+        $this->assertContains('Apps API installation/done: odpowiedź.', $this->messages());
+
+        $logged = $this->allLogged();
+        $this->assertStringNotContainsString('LIC-TEST-0000000000000000', $logged);
+        $this->assertStringNotContainsString('Sklep Testowy', $logged);
     }
 }

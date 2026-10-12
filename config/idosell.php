@@ -33,6 +33,10 @@ return [
         // Świadomie bez cache — zob. komentarz w Services\ApiKeyDecryptor.
         'keyset_url' => env('IDOSELL_APPS_KEYSET_URL', 'https://apps.idosell.com/keyset'),
 
+        // Przy aktywacji pytamy Apps API (`application/license`), czy `api_license` z webhooka
+        // należy do tego `client_id`. Wyłączaj tylko awaryjnie albo lokalnie (simulate).
+        'verify_license_owner' => (bool) env('IDOSELL_VERIFY_LICENSE_OWNER', true),
+
         // Tolerancja daty (w dniach) przy weryfikacji `sign` — przełom doby i różnice stref.
         'sign_date_tolerance_days' => (int) env('IDOSELL_SIGN_DATE_TOLERANCE', 1),
 
@@ -56,6 +60,10 @@ return [
     'admin_api' => [
         'version' => env('IDOSELL_ADMIN_API_VERSION', 'v8'),
         'partners_version' => env('IDOSELL_PARTNERS_API_VERSION', 'v2'),
+
+        // `api_url` musi zawsze używać https i publicznej domeny. Opcjonalne zawężenie hostów
+        // paneli (`*.domena`, po przecinku). Puste = dowolna domena.
+        'allowed_hosts' => env('IDOSELL_ADMIN_API_ALLOWED_HOSTS'),
 
         'timeout' => (int) env('IDOSELL_ADMIN_API_TIMEOUT', 15),
         'connect_timeout' => (int) env('IDOSELL_ADMIN_API_CONNECT_TIMEOUT', 5),
