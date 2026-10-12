@@ -1060,16 +1060,16 @@
         },
         {
             "name": "idosell/laravel-app-sdk",
-            "version": "2.0.0",
+            "version": "2.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/gdziekarowski/laravel-app-sdk.git",
-                "reference": "b0e21b7c5074306f44815f27b2e7a8936831d058"
+                "reference": "ab269f1d2363c4149619de886482200cbdcf72e0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/gdziekarowski/laravel-app-sdk/zipball/b0e21b7c5074306f44815f27b2e7a8936831d058",
-                "reference": "b0e21b7c5074306f44815f27b2e7a8936831d058",
+                "url": "https://api.github.com/repos/gdziekarowski/laravel-app-sdk/zipball/ab269f1d2363c4149619de886482200cbdcf72e0",
+                "reference": "ab269f1d2363c4149619de886482200cbdcf72e0",
                 "shasum": ""
             },
             "require": {
@@ -1142,7 +1142,7 @@
                 "source": "https://github.com/gdziekarowski/laravel-app-sdk/tree/2.0.0",
                 "issues": "https://github.com/gdziekarowski/laravel-app-sdk/issues"
             },
-            "time": "2026-10-12T14:57:47+00:00"
+            "time": "2026-10-12T15:18:33+00:00"
         },
         {
             "name": "laravel/framework",
